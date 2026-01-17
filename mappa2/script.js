@@ -1,101 +1,122 @@
-function gestisci() {
-    const output = document.getElementById("output");
-    output.innerHTML = ""; // Pulisce l'area
+let turni = new Map();
 
-    function stampa(messaggio) {
-        output.innerHTML += messaggio + "<br>";
+function stampa(testo) {
+    let paragrafo = document.createElement('p');
+    
+    paragrafo.textContent = testo;
+    document.getElementById('risultato').appendChild(paragrafo);
+}
+
+function pulisci() {
+    document.getElementById('risultato').innerHTML = '';
+}
+
+function turno() {
+    pulisci();
+    let orario = document.getElementById('orario').value.trim();
+    let inputStudenti = document.getElementById('studenti').value.trim();
+    
+    if (!orario || !inputStudenti) {
+        stampa('Errore: compila entrambi i campi');
+        return;
     }
+    if (turni.has(orario)) {
+        stampa('Errore: turno già esistente');
+        return;
+    }
+    
+    let arrayStudenti = inputStudenti.split(',').map(s => s.trim()).filter(s => s);
+    turni.set(orario, arrayStudenti);
+    
+    stampa('Turno ' + orario + ' creato con ' + arrayStudenti.length + ' studenti');
+    document.getElementById('orario').value = '';
+    document.getElementById('studenti').value = '';
+}
 
-    // Creare la Map chiamata turni
-    const turni = new Map();
-
-    // Inserire almeno 3 turni con almeno 3 studenti
-    turni.set("08:00-09:00", ["S01", "S02", "S03"]);
-    turni.set("09:00-10:00", ["S04", "S05", "S06"]);
-    turni.set("10:00-11:00", ["S07", "S08", "S09"]);
-
-    // Stampare tutti i turni
-    stampa("<strong>Elenco Turni Iniziale:</strong>");
+function mostra() {
+    pulisci();
+    if (turni.size == 0) {
+        stampa('Nessun turno presente');
+        return;
+    }    
+    
+    stampa('Elenco turni:');
     for (let [orario, studenti] of turni) {
-        stampa(`Turno ${orario}: ${studenti.join(", ")}`);
+        stampa(orario + ': ' + studenti.join(', '));
     }
+}
 
-    // Calcolare numero totale turni e studenti
-    let totaleStudenti = 0;
-    for (let studenti of turni.values()) {
-        totaleStudenti += studenti.length;
-    }
-    stampa(`<br>Numero turni: ${turni.size}`);
-    stampa(`Numero totale studenti: ${totaleStudenti}`);
-
-    // Verificare posizione di uno studente
-    const cercaStudente = "S05";
-    let trovato = false;
+function cerca() {
+    pulisci();
+    let codice = document.getElementById('cerca').value.trim();
+    if (!codice) return stampa('Inserisci un codice');
+    
     for (let [orario, studenti] of turni) {
-        if (studenti.includes(cercaStudente)) {
-            stampa(`Studente ${cercaStudente} trovato nel turno ${orario}`);
-            trovato = true;
-            break;
+        if (studenti.includes(codice)) {
+            stampa(codice + ' trovato nel turno ' + orario);
+            return;
         }
     }
+    stampa('Studente non trovato');
+}
 
-    // Funzione per aggiungere studente
-    function aggiungiStudente(nuovoStudente, orarioDestinazione) {
-        // Controllo se esiste già in qualsiasi turno
-        for (let studenti of turni.values()) {
-            if (studenti.includes(nuovoStudente)) {
-                stampa(`Errore: lo studente ${nuovoStudente} è già prenotato in un altro turno`);
-                return;
-            }
-        }
-        // Se non esiste, lo aggiungo
-        if (turni.has(orarioDestinazione)) {
-            turni.get(orarioDestinazione).push(nuovoStudente);
-            stampa(`Studente ${nuovoStudente} aggiunto al turno ${orarioDestinazione}`);
-        }
+function aggiungi() {
+    pulisci();
+    let orario = document.getElementById('turno').value.trim();
+    let codice = document.getElementById('studente').value.trim();
+    
+    if (!turni.has(orario)){
+         stampa('Turno non esistente');
+        return;
     }
-
-    // Prova aggiunta duplicato
-    stampa("Tentativo di aggiunta studente S03 al turno 10:00-11:00...");
-    aggiungiStudente("S03", "10:00-11:00");
-
-    // Prova aggiunta nuovo
-    aggiungiStudente("S10", "10:00-11:00");
-
-    // Rimuovere uno studente
-    const studenteDaRimuovere = "S02";
-    const orarioRimozione = "08:00-09:00";
-    if (turni.has(orarioRimozione)) {
-        let lista = turni.get(orarioRimozione);
-        const index = lista.indexOf(studenteDaRimuovere);
-        if (index > -1) {
-            lista.splice(index, 1);
-            stampa(`Studente ${studenteDaRimuovere} rimosso dal turno ${orarioRimozione}`);
+    // Controllo duplicati in TUTTI i turni
+    for (let lista of turni.values()) {
+        if (lista.includes(codice)) {
+            stampa('Errore: Studente già presente in un turno');
+            return;
         }
     }
+    
+    turni.get(orario).push(codice);
+    stampa(codice + ' aggiunto a ' + orario);
+}
 
-    // Stampare elenco aggiornato
-    stampa("<strong>Situazione aggiornata:</strong>");
-    for (let [orario, studenti] of turni) {
-        stampa(`Turno ${orario}: ${studenti.join(", ")}`);
+function rimuovi() {
+    pulisci();
+    let orario = document.getElementById('turno').value.trim();
+    let codice = document.getElementById('studente').value.trim();
+    
+    if (!turni.has(orario)){
+        stampa('Turno non esistente');
+        return;
     }
+    let lista = turni.get(orario);
+    let indice = lista.indexOf(codice);
+    
+    if (indice === -1){
+        stampa('Studente non trovato in questo turno');
+        return;
+    }
+    lista.splice(indice, 1);
+    stampa('Studente rimosso');
+}
 
-    // Determinare il turno con più studenti
-    let maxStudenti = -1;
-    let turnoMigliore = "";
-    for (let [orario, studenti] of turni) {
-        if (studenti.length > maxStudenti) {
-            maxStudenti = studenti.length;
-            turnoMigliore = orario;
+function dati() {
+    pulisci();
+    let totale = 0;
+    for (let s of turni.values()) totale += s.length;
+    stampa('Turni: ' + turni.size);
+    stampa('Totale studenti: ' + totale);
+}
+
+function max() {
+    pulisci();
+    let max = -1, orarioMax = '';
+    for (let [ora, s] of turni) {
+        if (s.length > max) {
+            max = s.length;
+            orarioMax = ora;
         }
     }
-    stampa(`Turno con il maggior numero di studenti: ${turnoMigliore} (${maxStudenti} studenti)`);
-
-    // Stampare solo i turni con almeno 3 studenti
-    stampa(`Turni con almeno 3 studenti:`);
-    for (let [orario, studenti] of turni) {
-        if (studenti.length >= 3) {
-            stampa(`- ${orario}`);
-        }
-    }
+    stampa('Max studenti: ' + orarioMax + ' (' + max + ')');
 }

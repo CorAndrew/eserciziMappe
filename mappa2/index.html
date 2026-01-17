@@ -3,12 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Turni Laboratorio</title>
+    <title>Gestione Turni Laboratorio</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Turni Laboratorio</h1>
-    <button onclick="gestisci()">Avvia</button>
-    <div id="output" style="margin-top: 20px;"></div>
+    <h1>Gestione turni laboratorio</h1>
+
+    <div class="contenitore">
+        <h3>Creazione turno</h3>
+        <input type="text" id="orario" placeholder="es. 8-9">
+        <input type="text" id="studenti" placeholder="es. S01, S02, S03">
+        <button onclick="turno()">Aggiungi</button>
+    </div>
+
+    <div class="contenitore">
+        <h3>Impresa</h3>
+        <input type="text" id="cerca" placeholder="Cerca studente">
+        <button onclick="cerca()">Cerca</button>
+        <br>
+        <input type="text" id="turno" placeholder="Orario turno">
+        <input type="text" id="studente" placeholder="Studente">
+        <button onclick="aggiungi()">Aggiungi studente</button>
+        <button onclick="rimuovi()">Rimuovi studente</button>
+    </div>
+
+    <div class="contenitore">
+        <h3>Informatizoni</h3>
+        <button onclick="mostra()">Mostra turni</button>
+        <button onclick="dati()">Dati</button>
+        <button onclick="max()">Turno massimo</button>
+    </div>
+
+    <div id="risultato"></div>
     <script src="script.js"></script>
 </body>
 </html>
